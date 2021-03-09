@@ -1,0 +1,343 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 18 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Welcome back! I know, I know, you all all shocked that this tut is out so
+soon after the last one, but the reason for this is that I want to have Tut
+20 out by the time PCGPE ][ is released. I probably won't get that far, but
+I'll try! ;)
+
+This tut is on file packing, and putting everything into one executeable
+file. For tut 19, I am thinking of doing a bit more on explaining
+assembler, and perhaps demonstrating with a fire effect or something.
+
+My mailserver is back up, thanks to Nobody (that's his handle). You write
+to denthor@beastie.cs.und.ac.za with the subject line request-list. The
+mailserver checks each incoming letter for this subject line, and if it
+finds one of the specific strings, it mails you back a certain file. I
+never get to see these messages! If you want to mail me personally, give
+your message a unique subject name! Anyway, you can request all the tuts
+through this mailserver.
+
+I hope you are all subscribed to the Demuan List! If not, ftp it off
+ftp.eng.ufl.edu every sunday. I am writing a "humor" column there until
+someone can figure out something else I could write ;-).
+
+Pipsy wants mail! She is at cowan@beastie.cs.und.ac.za and wants to chat :)
+Go on, mail her. The co-founder of ctrl-alt-del, she is also a good
+graphics coder.
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Loading a PCX file
+
+This is actually quite easy. The PCX file is divided into three sections,
+mainly a 128 byte header, a data section, and a 768 byte pallette.
+
+You can usually ignore the 128 byte header, but here it is :
+
+0  Manufacturer     10 = ZSoft .PCX file
+1  Version
+2  Encoding
+3  Bits Per Pixel
+4  XMin, Ymin, XMax, YMax  (2 bytes each)
+12 Horizontal Resolution (2 bytes)
+14 Verticle Resolution (2 bytes)
+16 Color pallette setting (48 bytes)
+64 Reserved
+65 Number of color planes
+66 Bytes per line (2 bytes)
+68 1 = Color    2 = Grayscale  (2 bytes)
+70 Blank (58 bytes)
+
+That makes 128 bytes.
+
+The pallette file, which is 768 bytes, is situated at the very end of the
+PCX file. The 769'th byte back should be the decimal 12, which indicates
+that a VGA color pallette is to follow.
+
+There is one thing that we have to do to get the pallette correct in VGA ...
+the PCX pallette values for R,G,B are 0 to 255 respectively. To convert this
+to our standard (VGA) pallette, we must divide the R,G,B values by 4, to get
+them into a range of 0 to 63.
+
+Actually decoding the image is very simple. Starting after the 128 byte
+header, we read a byte.
+
+If the top two bits of this byte are not set, we dump the value to the screen.
+
+We check bits as follows :
+
+if ((temp and $c0) = $c0) then ...(bits are set)... else ...(bits are not set)
+
+C0 in hex = 11000000 in binary = 192 in decimal
+
+Let's look at that more closely...
+
+  temp  and  c0h
+  temp  and  11000000b
+
+That means, when represented in bit format, both corresponding bits have
+to be set to one for the result to be one.
+
+0 and 0 = 0     1 and 0 = 0    0 and 1 = 0    1 and 1 = 1
+
+In the above case then, both of the top two bits of temp have to be set for
+the result to equal 11000000b. If it does not equal that, the top two bits
+are not both set, and we can put the pixel.
+
+So
+
+  if ((temp and $c0) = $c0) then BEGIN
+  END else BEGIN
+    putpixel (screenpos,0,temp,vga);
+    inc (screenpos);
+  END;
+
+If the top two bits _are_ set, things change. The bottom six bits become
+a loop counter, which the next byte is repeated.
+
+  if ((temp and $c0) = $c0) then BEGIN
+{    Read in next byte, temp2 here.}
+    for loop1:=1 to (temp and $3f) do BEGIN
+      putpixel (screenpos,0,temp2,vga);
+      inc (screenpos);
+    END;
+  END else BEGIN
+    putpixel (screenpos,0,temp,vga);
+    inc (screenpos);
+  END;
+
+There is our PCX loader. You will note that by and'ing temp by $3f, I am
+and'ing it by 00111111b ... in other words, clearing the top two bits.
+
+The sample program has the above in assembler, but it is the same procedure...
+and you can read tut 19 for more info on how to code in assembler.
+
+In the sample I assume that the pic is 320x200, with a maximum size of 66432
+bytes.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  File packing
+
+The question is simple .. how do I get all my files into one executeable?
+Having many small data files can start to look unprofessional.
+
+An easy way to have one .exe and one .dat file when dealing with many
+cel's etc. is easy .... you would alter your load procedure, which looks
+as follows :
+
+VAR temp : Array [1..5,1..256] of byte;
+Procedure Init;
+BEGIN
+  loadcel ('pic1.cel',temp[1]);
+  loadcel ('pic2.cel',temp[2]);
+  loadcel ('pic3.cel',temp[3]);
+  loadcel ('pic4.cel',temp[4]);
+  loadcel ('pic5.cel',temp[5]);
+END;
+
+For one complile you would do this :
+
+VAR temp : Array [1..5,1..256] of byte;
+Procedure Init;
+VAR f:File;
+BEGIN
+  loadcel ('pic1.cel',temp[1]);
+  loadcel ('pic2.cel',temp[2]);
+  loadcel ('pic3.cel',temp[3]);
+  loadcel ('pic4.cel',temp[4]);
+  loadcel ('pic5.cel',temp[5]);
+  assign (f,'pic.dat');
+  rewrite (f,1);
+  blockwrite (f,temp,sizeof(temp));
+  close (f);
+END;
+
+From then on, you would do :
+
+VAR temp : Array [1..5,1..256] of byte;
+Procedure Init;
+VAR f:File;
+BEGIN
+  assign (f,'pic.dat');
+  reset (f,1);
+  blockread (f,temp,sizeof(temp));
+  close (f);
+END;
+
+This means that instead of five data files, you now have one! You have also
+stripped the 800 byte cel header too :) ... note that this will work for any
+form of data, not just cel files.
+
+The next logical step is to include this data in the .exe file, but the
+question is how?  In an earlier tutorial, I converted my data file to
+constants and placed it inside my main program. This is not good mainly
+because of space restrictions ... you can only have so many constants, and
+what if your data file is two megs big?
+
+Attached with this tutorial is a solution. I have written a program that
+combines your data files with your executeable file, no matter how big
+the data is. The only thing you have to worry about is a small change in
+your data loading methods. Lets find out what.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Using the file packer
+
+Normally you would load your data as follows :
+
+Procedure Init;
+BEGIN
+  loadcel ('bob.bob',temp);
+  loadpcx ('den.pcx',VGA);        { Load a PCX file }
+  loaddat ('data.dat',lookup);    { Load raw data into lookup }
+END;
+
+Easy, hey? Now, using the file packer, you would change this to :
+
+USES fpack;
+Procedure Init;
+BEGIN
+  total := 3;
+  infodat[1] := 'bob.bob';
+  infodat[2] := 'den.pcx';
+  infodat[3] := 'data.dat';
+  loadcel (1,temp);
+  loadpcx (2,VGA);
+  loaddat (3,lookup);
+END;
+
+Not too difficult? Now, this is still using the normal data files on your
+hard drive. You would then run PACK.EXE, select the program's .exe as the
+base, then select "bob.bob", "den.pcx" and "data.dat", in order (1, 2, 3).
+Hit "c" to contine, and it will combine the files. Your programs .exe file
+will be able to run independantly of the separate data files on disk,
+because the data files are imbedded with the .exe.
+
+Let us take a closer look at the load procedures. Normally a load procedure
+would look as follows :
+
+Procedure LoadData (name:string; p:pointer);
+VAR f:file;
+BEGIN
+  assign (f,name);
+  reset (f,1);
+  blockread (f,p^,filesize(f);
+  close (f);
+END;
+
+In FPack.pas, we do the following :
+
+Function LoadData (num:integer; p:pointer):Boolean;
+VAR f:file;
+BEGIN
+  If pack then BEGIN
+    assign (f,paramstr(0));
+    reset (f,1);
+    seek (f,infopos[num]);
+    blockread (f, p^, infopos[num+1]-infopos[num]);
+    close (f);
+  END else BEGIN
+    assign (f,infodat[num]);
+    reset (f,1);
+    blockread (f, p^, filesize (f));
+    close (f);
+  END;
+END;
+
+As you can see, we just have two special cases depending on weather or not
+the .exe file has been packed yet.
+
+NOTE : After you have packed the file, you CAN NOT pklite it. You can
+       however pklite the .exe _before_ you run pack.exe ... in other
+       words, you can not use pklite to try pack your data files.
+
+PACK.EXE does have a limitation ... you can only pack 24 data files together.
+If you would like it to do more, mail me ... It should be easy to increase the
+number.
+
+In the sample program, FINAL.EXE is the same as temp.pas, except it has
+it's PCX embedded inside it. I ran pack2.exe, selected final.exe and
+eye.pcx, hit "C", and there it was. You will notice that eye.pcx is not
+included in the directory ... it is now part of the exe!
+
+eye.pcx was draw by Gary Morton of iCANDi Design. The other pcx is an old
+one draw by Fubar.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  In closing
+
+Well, that's about it for this trainer... next one (as I have mentioned
+twice already ;) will be on assembler, with a flame routine thrown in.
+
+Any good html programmers out there? My web page really needs help ;-)
+
+As soon as I figure out how, I will also be creating a mailing list, in
+which people with internet addresses will be able to get all new trainers
+dilivered directly into their mailbox's. I hope to announce something in
+tut 20.
+
+This tut has been a bit of a departure from normal tuts ... aside from the
+PCX loading routines, the rest has been "non programming" oriented ...
+don't worry, next weeks one will be back to normal.
+
+
+Byeeeee....
+  - Denthor
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ *Moving*
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ *Moving*
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+บReckless Life             บ351-01-716 67 58บALL  บ
+บMach 5 BBS                บ+1 319-355-7336 บALL  บ
+บHouse of Horror           บ+1 513-734-6470 บALL  บ
+บZero Level                บ+39 6-810-9934  บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.

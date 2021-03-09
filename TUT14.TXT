@@ -1,0 +1,337 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 14 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hello there. Exams are just around the corner (again :( ), so I thought 
+I better get round to doing the next trainer. As usual, there seems to 
+have been a big delay between this one and the last one... sorry about 
+that ;-)
+
+Well, this trainer is mainly on four things : Glenzing, faster polys,
+fixed point and assembler. The sample program is basically tut 9
+rewritten to include the above.
+
+I'll go through them in order, and hopefully you won't have any hassles
+grasping the concepts. By the way, do any of you read the text files? I
+find myself answering questions via E-Mail etc. that were discussed in
+the text sections of the trainers ... oh well, I'll just ramble along
+anyway ;-)
+
+Please dont send any mail to smith9@batis.bis.und.ac.za anymore ... I 
+don't know for how much longer the account will be valid (How can a 
+non-BIS person get onto the BIS UNIX machine in the BIS2 directory? If 
+his name is Denthor I suppose ;-) Oh well, I got about 8 months use out 
+of it. The account expires on Christmas day anyway...) So anyway, please
+leave all messages to denthor@beastie.cs.und.ac.za
+                                                  
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ What is glenzing?
+
+This is an easy one. Imagine, in a 3D object, that all the sides are
+made out of colored glass. That means that every time you look through
+that side, everything behind it is tinged in a certain color.
+
+In ascii ...
+          +---------+
+          |      <--|---Light blue
+          |         |
+     +--------+     |
+     |    | <-|-----|---Dark blue
+     |    +---|-----+
+     |     <--|---------Light blue
+     +--------+
+
+So where the two sides overlap, the color values of the two sides are 
+added. Easy huh? It is also easy to code. This is how you do it :
+
+Set up your pallette to be a nice run of colors.
+Draw your first poly.
+While drawing poly 1, instead of plonking down a set pixel color, grab the
+  backgrond pixel, add 1 to it, then put the result down.
+Draw your second poly.
+While drawing poly 2, instead of plonking down a set pixel color, grab the
+  backgrond pixel, add 2 to it, then put the result down.
+and so forth.
+
+So if the color behind poly 1 was 5, you would place pixel 6 down
+instead.
+
+If you do this for every single pixel of every single side of your 3d 
+object, you then have glenzing going. This is obviously slightly slower
+then just drawing an item straight, but in the sample program it goes
+quite quickly ... this is because of the following sections...
+  
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Faster Polygons
+
+In Tut 9, you probably noticed that we were using a multiply for every
+single line of the poly that we drew. This is not good. Let's find out
+how to speed it up, shall we...
+
+With the multiply method, we went through every line, to find out the
+minimum x and maximum x value for that line.
+
+                           +
+                   ------/---\------- Find min x and max x, draw a line
+                       /       \        between them.
+                     +           +
+                       \       /
+                         \   /
+                           +
+
+How about if we found out all the min and max x's for every line first, 
+then just went through an array drawing them. We could do it by 
+"scanning" each side in turn. Here is how we do it :
+
+                          + 1
+                        /
+                      /
+                  2 +
+
+We go from point one to point two. For every single y we go down, we 
+move a constant x value. This value is found like this :
+
+           xchange := (x1-x2)/(y1-y2)
+
+Remember gradients? This is how you calulated the slope of a line waaay
+back in school. You never thought it would be any use, didn't you ;-)
+
+Anyway, with this value, we can do the following :
+
+    For loop1:=y1 to y2 do BEGIN
+      [ Put clever stuff here ]
+      x:=x+xchange;
+    END;
+    
+and we will go through all the x-values we need for that line. Clever, 
+huh?
+
+Now for the clever bit. You have an array, from 0 to 199 (which is all
+the possible y-values your onscreen poly can have). Inside this is two 
+values, which will be your min x and your max x. You start off with the 
+min x being a huge number, and the max x being a low number. Then you 
+scan a side. For each y, check to see if one of the following has 
+happened :    If the x value is smaller then the xmin value in your
+                array, make the xmin value equal to the x value
+              If the x value is larger then the xmax value in your
+                array, make the xmax value equal to the x value
+
+The loop now looks like this :
+
+    For loop1:=y1 to y2 do BEGIN
+      if x>poly[loop1,1] then poly[loop1,1]:=x;
+      if x<poly[loop1,1] then poly[loop1,1]:=x;
+      x:=x+xchange;
+    END;
+
+Easy? Do this for all four sides (you can change this for polys with 
+different numbers of sides), and then you have all the x min and x max
+values you need to draw your polygon.
+
+In the sample program, if you replaced the Hline procedure with one that
+draws solid lines, you could use the given drawpoly for solids.
+
+Even this procedure is sped up by the next section, on fixed point.
+   
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  What is fixed point?
+
+Have you ever noticed how slow reals are? I mean slooooow. You can get a
+massive speed increase in most programs by replacing your reals with 
+integers, words etc. But, I hear you cry, what happens to the much 
+needed fraction bit after the decimal point? The answer? You keep it. 
+Here's how.
+
+Let us say you have a word, which is 16 bits. If you want to use it as a
+fixed point value, you can separate it into 2 sections, one of which 
+holds the whole value, and one which holds the fraction.
+
+             00000000  00000000   <-Bits
+             Whole     Fraction
+             
+The number 6.5 would therefore be shown as follows :
+ 
+             Top byte    :  6
+             Bottom byte :  128
+             
+128 is half (or .5) of 256, and in the case of the fraction section, 256
+would equal one whole number.
+
+So let us say we had 6.5 * 2. Using reals this would be a slow mul, but 
+with fixed point ...
+
+            Top Byte    :  6     
+            Bottom Byte :  128
+            Value       :  1664   <-This is the true value of the word
+                                     ie. (top byte*256)+bottom byte).
+                                     this is how the computer sees the 
+                                     word.
+             1664 shl 1 = 3328    <-shl 1 is the same as *2, just faster.
+            Top byte    :  13
+            Bottom byte :  0
+
+As you can see, we got the correct result! And in a fraction of the time
+that a multiplication of a real would have taken us. You can add and
+subtract fixed point values with no hassles, and multiply and divide 
+them by normal values too. When you need the whole value section, you 
+can just read the high byte, or do the following
+
+             whole = word shr 8
+         eg  1664 shr 8 = 6
+         
+As you can see, the fraction is truncated. Obviously, the more bits you 
+set aside for the fraction section, the more accurate your calculation 
+is, but the lesser the maximum whole number you can have. For example, 
+in the above numbers, the maximum value of your whole number was 256, a
+far cry from the 65535 a normal (non fixed point) word's maximum.
+
+There are a lot of hassles using fixed point (go on, try shift a
+negative value), most of which have to do with the fact that you have 
+severely decreased the maximum number you may have, but trust me, the 
+speed increase is worth it (With longintegers, and/or extended 386
+registers, you can even have 16x16 fixed point, which means high
+accuracy and high maximum values)
+
+Try write a program using fixed point. It is not difficult and you will
+get it perfect easily. Trust me, I'm a democoder ;-)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Assembler
+
+In the sample program I used one or two assembler commands that I havent
+discussed with you ... here they are ...
+
+  imul  value      This is the same as mul, but for integer values. It
+                     multiplies ax by the value. If the value is a word,
+                     it returns the result in DX:AX
+
+  sal  register,value   This is the same as shl, but it is arithmetic,
+                          in other words it works on integers. If you
+                          had to shl a negative value, the result would
+                          mean nothing to you.
+
+  rcl  register,value   This is the same as shl, but after you have
+                          shifted, the value in the carry flag is placed
+                          in the now-vacated rightmost bit. The carry
+                          flag is set when you do an operation where the
+                          result is greater then the upmost possible
+                          value of the variable (usually 65535 or 32767)
+                          eg mov ax,64000
+                             shl ax,1     {<- Carry flag now = 1}
+                             
+For more info on shifting etc, re-read tut 7, it goes into the concept
+in detail.
+
+The sample program is basically Tut 9 rewritten. To see how the
+assembler stuff is working, do the following ... Go into 50 line mode
+(-Much- easier to debug), then hit [Alt - D] then R. A little box with
+all your registers, segments etc and their values will pop up. Move it
+down to where you want it, then go back to the program screen (Hit Alt
+and it's number together), and resize it so that you have both it and
+the register box onscreen at once (Alt - 5 to resize) ... then use F4,
+F7 and F8 to trace though the program (you know how). The current value
+of the registers will always be in that box.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ In closing
+
+Well, that is about it. The sample program may start as being a little 
+intimidating to some when they first look at it, just remember to read 
+it with tut 9, very little is different, it's just with fixed point and 
+a bit of assembler.
+
+Before I forget, with Tut 13, the program crashes if you have error 
+checking on. This is how you sort it out :
+
+1) Turn off error checking     or
+2) Make logo a pointer, and get and free the memory     or
+3) Read the logo directly to screen     or
+4) Use the {$M ......} command with various values at the top of the 
+     program till it works.
+     
+I prefer options 3 or 2, but hey ... the problem was that the logo was
+rather large (16k), and Pascal likes complaining ;-)
+
+I am in doubt as to weather to continue doing quotes ... here is a 
+conversation I had with Pipsy, after the group conversation got around 
+to weather we were normal or not ...
+
+Me : I'm normal.
+Pipsy : No your not.
+Me : Prove it.
+Pipsy : Just look at your quotes in your trainers.
+Me : What? You think those are weird?
+Pipsy : Too weird.
+Me : You mean that there is a weirdness line, and I crossed it?
+Pipsy : Yes.
+
+Bit of a conversation killer that, so we stopped there.
+
+Anyway, this trainer won't have a quote in it ... how about a disclaimer
+instead? Feel free to use it in your messages ...
+
+------------------------------------------------------------------------
+The views expressed above are mine and not Novells. In fact, I've never
+worked for them in my life!
+
+Byeeee....
+  - Denthor
+      18:57
+        9-9-94
+
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.

@@ -1,0 +1,214 @@
+                   ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+                   ³         W E L C O M E         ³
+                   ³  To the VGA Trainer Program   ³ ³
+                   ³              By               ³ ³
+                   ³      DENTHOR of ASPHYXIA      ³ ³ ³
+                   ÔÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¾ ³ ³
+                     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ ³
+                       ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+                           --==[ PART 21 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş Introduction
+
+Hi there! It's been quite a long time (again) since the last tutorial ...
+I'll bet some of you had given up one me ;-)
+
+Today is my 21st birthday, so I decided it would be the perfect time to
+finish up this trainer which I have been meaning to send out for weeks.
+It's on texure mapping. I know, I know, I said light sourcing, then gourad,
+then texture mapping, but I got enough mail (a deluge in fact ;) telling me
+to do texure mapping...
+
+I'll be using the code from Tut 20 quite extensively, so make sure you know
+whats going on in there... well, on with the show!
+
+BTW, I've improved my web page quite a bit... give it a visit, I want to
+really ramp up that hit count :)
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during work hours). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@goth.vironix.co.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+http://www.vironix.co.za/~grants                       (WWW)
+ftp.eng.ufl.edu pub/msdos/demos/code/graph/tutor       (FTP)
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  Free Direction Texture Mapping
+
+There are two things you should know before we begin.
+
+Firstly, I am cheating. The texture mapping I am going to show you is not
+perspective-correct, with clever divides for z-placement etc. This method
+looks almost as good and is quite a bit faster too.
+
+Secondly, you will find it all rather easy. The reason for this is that it's
+all rather simple. I first made the routine by sitting down with some paper
+and a pencil and had it on the machine in a few hours. A while later when
+people on the net started discussing their methods, they were remarkably
+similar.
+
+Let me show you what I mean.
+
+Let us assume you have a texture of 128x128 (a straight array of bytes
+[0..127, 0..127]) which you want to map onto the side of a polygon. The
+problem of course being that the polygon can be all over the place, with
+one side longer then the other etc.
+
+Our first step is to make sure we know which end is up... let me
+demonstrate...
+                      1
+                    +
+                 /    \
+              /         \
+          4 +            +  2
+              \        /
+                \   /
+                  +
+                  3
+
+Let us say that the above is the chosen polygon. We have decided that point
+1 is the top left, point 3 is bottom right. This means that
+  1 - 2   is the top of the texture
+  2 - 3   is the right of the texture
+  3 - 4   is the bottom of the texture
+  4 - 1   is the left of the texture
+
+The same polygon, but rotated :
+
+                      3
+                    +
+                 /    \
+              /         \
+          2 +            +  4
+              \        /
+                \   /
+                  +
+                  1
+
+Although the positions of the points are different, point 1 is still the
+top left of our texture.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  How to put it to screen
+
+Okay, so now you have four points and know which one of them is also the top
+left of our texture. What next?
+
+If you think back to our tutorial on polygons, you will remember we draw it
+scanline by scanline. We do texture mapping the same way.
+
+Lets look at that picture again :
+
+                      1
+                    +
+               a /    \  b
+              /         \
+          4 +            +  2
+              \        /
+                \   /
+                  +
+                  3
+
+We know that point 1 is at [0,0] in our texture. Point 2 is at [127,0],
+Point 3 is at [127,127], and Point 4 is at [0,127].
+
+The clever bit, and the entire key to texture mapping, is making the
+logical leap that precisely half way between Point 1 and Point 2 (b), we are at
+[64,0] in our texture. (a) is in the same manner at [0,64].
+
+That's it. All we need to know per y scanline is :
+The starting position on the x axis of the polgon line
+The position on the x in the texture map referenced by that point
+The position on the y in the texture map referenced by that point
+
+The ending position on the x axis of the polgon line
+The position on the x in the texture map referenced by that point
+The position on the y in the texture map referenced by that point
+
+Let me give you an example. Let's sat that (a) and (b) from the above
+picture are on the same y scanline. We know that the x of that scanline is
+(say) 100 pixels at the start and 200 pixels at the end, making it's width
+100 pixels.
+
+We know that on the left hand side, the texture is at [0,64], and at the
+right hand side, the texture is at [64,0]. In 100 pixels we have to
+traverse our texture from [0,64] to [64,0].
+
+Assume at the start we have figured out the starting and ending points in
+the texture
+  textureX = 0;
+  textureY = 64;
+  textureEndX = 64;
+  textureEndY = 0;
+
+  dx := (TextureEndX-TextureX)/(maxx-minx);
+  dy := (TextureEndY-TextureY)/(maxx-minx);
+  for loop1 := minx to maxx do BEGIN
+    PutPixel (loop1, ypos, texture [textureX, textureY], VGA);
+    textureX = textureX + dx;
+    textureY = textureY + dy;
+  END;
+
+
+Do the above for all the scanlines, and you have a texture mapped polygon!
+It's that simple.
+
+We find our beginning and ending positions in the usual fasion. We know
+that Point 1 is [0,0]. We know that Point 2 is [127,0]. We know the number
+of scanlines on the y axis between Point 1 and Point 2.
+
+  textureDX = 127/abs (point2.y - point1.y)
+
+We run though all the y scanlines, starting from [0,0] and adding the above
+formula to the X every time. When we hit the last scanline, we will be at
+point [127,0] in the texure.
+
+Repeat for all four sides, and you have the six needed variables per
+scanline.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  In closing
+
+As you can see, texture mapping (this type at least) is quite easy, and
+produces quite a good result. You will however notice a bit of distortion
+if you bring the polygon too close. This can be fixed by a) Subdividing the
+polygon, so the one is made up of four or more smaller polygons. Much
+bigger, but works; b) Using more accurate fixed point; or c) Figuring out
+perspective correct texture mapping, mapping along constant-z lines etc.
+
+When people write me, they often refer to my "tutes". This stems back to
+Mark Feldman calling them such in the PCGPE. I always though a "tute" was
+something you did with your car to gain someones attention. I dunno, maybe
+its an Australian thing ;-)
+
+I have been coding almost exclusively in C/C++ for the past year or so.
+Sorry guys, thats all they will pay me for ;) Anyway, the trainers will
+continue to be in Pascal for ease of understanding by beginners, but if
+someone (*ahem* Snowman) doesn't start converting them to C soon, I will do
+it myself. He also corrected any mistakes I made while he was converting,
+so I'd prefer he did it (sort of a proofreader after release...)
+
+Send me presents! It's my birthday!
+
+Byeeeee.....
+  - Denthor
+      16-04-96
+

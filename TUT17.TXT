@@ -1,0 +1,256 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 17 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hi there everybody. It's a new year, but the parties are over and it's time
+to get coding again!
+
+My mailserver died. Various sysadmins decided it was time to upgrade the
+OS, and wound up nuking the hard drive :-( ... this means that request-list
+is not working at the moment, and I have probably lost lots of mail.
+
+denthor@beastie.cs.und.ac.za is still the account to write to, and
+hopefully the mailserver will be back up in the near future.
+
+There are various C/C++ conversions of my trainer, best of which seem to be
+those by Snowman ... he runs through the text files with C++ updates (and
+seems to point out my previous mistakes with glee ;-), as well is giving a
+fully documented C++ conversion of the source ... very nice stuff.
+
+Also, my trainers are being put on a World Wide Web site ... it is still
+under construction, but go to http://www.cit.gu.edu.au/~rwong
+my site is at http://goth.vironix.co.za/~denthor ... it is currently pretty
+awful, anyone want to write a nice one for me? ;)
+
+I have just about finished Asphyxia's new game, I will let you all know
+when it is completed.
+
+Tut 16 dies with large bitmaps ... the way to sort this out is to decrease
+the accuracy of the fixed point from 256 to 128 ... then you can have
+bitmaps up to 512 pixels wide. I will be putting an updated scale routine
+in the gfx4.pas unit.
+
+This tutor is on a few demo effects (pixel morphs and static) ... after
+this one, I will go on to more theory ... perhaps some more 3d stuff, such
+as gourad shading etc. Comments?
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Pixel Morphing
+
+Have you ever lain down on your back in the grass and looked up at the
+cloudy sky? If you have, you have probably seen the clouds move together
+and create wonderful shapes ... that cloud plus that cloud together make a
+whale ... a ship ... a face etc.
+
+We can't quite outdo mother nature, but we can sure give it a shot. The
+effect I am going to show you is where various pixels at different starting
+points move together and create an overall picture.
+
+The theory behind it is simple : Each pixel has bits of data associated
+with it, most important of which is as follows :
+
+This is my color
+This is where I am
+This is where I want to be.
+
+The pixel, keeping it's color, goes from where it is to where it wants to
+be. Our main problem is _how_ it moves from where it is to where it wants
+to be. A obvious approach would be to say "If it's destination is above it,
+decrement it's y value, if the destination is to the left, decrement it's x
+value and so on."
+
+This would be bad. The pixel would only ever move at set angles, as you can
+see below :
+
+                Dest   O-----------------\
+                                           \  <--- Path
+                                             \
+                                               \
+                                                O Source
+
+Doesn't look very nice, does it? The pixels would also take different times
+to get to their destination, whereas we want them to reach their points at
+the same time, ie :
+
+     Dest 1   O-------------------------------O Source 1
+     Dest 2   O-----------------O Source 2
+
+Pixels 1 and 2 must get to their destinations at the same time for the best
+effect. The way this is done by defining the number of frames or "hops"
+needed to get from source to destination. For example, we could tell pixel
+one it is allowed 64 hops to get to it's destination, and the same for
+point 2, and they would both arrive at the same time, even though pixel 2
+is closer.
+
+The next question, it how do we move the pixels in a straight line? This is
+easier then you think...
+
+Let us assume that for each pixel, x1,y1 is where it is, and x2,y2 is where
+it wants to be.
+
+   (x2-x1) = The distance on the X axis between the two points
+   (y2-y1) = The distance on the Y axis between the two points
+
+If we do the following :
+
+  dx := (x2-x1)/64;
+
+we come out with a value in dx wich is very useful. If we added dx to x1 64
+times, the result would be x2! Let us check...
+
+  dx = (x2-x1)/64
+  dx*64 = x2-x1         { Multiply both sides by 64 }
+  dx*64+x1 = x2         { Add x1 to both sides }
+
+This is high school math stuff, and is pretty self explanitory. So what we
+have is the x movement for every frame that the pixel has to undergo. We
+find the y movement in the same manner.
+
+  dy := (y2-y1)/64;
+
+So our program is as follows :
+
+  Set x1,y1 and x2,y2 values
+  dx:= (x2-x1)/64;
+  dy:= (y2-y1)/64;
+
+  for loop1:=1 to 64 do BEGIN
+    putpixel (x1,y1)
+    wait;
+    clear pixel (x1,y1);
+    x1:=x1+dx;
+    y1:=y1+dy;
+  END;
+
+If there was a compiler that could use the above pseudocode, it would move
+the pixel from x1,y1 to x2,y2 in 64 steps.
+
+So, what we do is set up an array of many pixels with this information, and
+move them all at once ... viola, we have pixel morphing! It is usually best
+to use a bitmap which defines the color and destination of the pixels, then
+randomly scatter them around the screen.
+
+Why not use pixel morphing on a base object in 3d? It would be the work of
+a moment to add in a Z axis to the above.
+
+The sample program uses fixed point math in order to achieve high speeds,
+but it is basically the above algorithm.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Static
+
+A static screen was one of the first effects Asphyxia ever did. We never
+actually released it because we couldn't find anywhere it would fit. Maybe
+you can.
+
+The easiest way to get a sreen of static is to tune your TV into an unused
+station ... you even get the cool noise effect too. Those people who build
+TV's really know how to code ;-)
+
+For us on a PC however, it is not as easy to generate a screen full of
+static (unless you desperately need a new monitor)
+
+What we do is this :
+
+Set colors 1-16 to various shades of grey.
+Fill the screen up with random pixels between colors 1 and 16
+Rotate the pallette of colors 1 to 16.
+
+That's it! You have a screenfull of static! To get two images in one static
+screen, all you need to do is fade up/down the specific colors you are
+using for static in one of the images.
+
+A nice thing about a static screen is that it is just pallette rotations
+... you can do lots of things in the foreground at the same time (such as a
+scroller).
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  In closing
+
+Well, that is about it ... as I say, I will be doing more theory stuff in
+future, as individual demo effects can be thought up if you know the base
+stuff.
+
+Note the putpixel in this GFX3.PAS unit ... it is _very_ fast .. but
+remember, just calling a procedure eats clock ticks... so imbed putpixels
+in your code if you need them. Most of the time a putpixel is not needed
+though.
+
+PCGPE ][ will be out on the 10th of Feburary. All the new tutors will be on
+it (if you aren't reading this from it right now! ;-) ... grab a copy of
+it, it is a very useful ting to have handy.
+
+I have found out that these tutors have been distributed inside paper
+magazines ... please remember that Denthor and Asphyxia retain full
+copyright to the series (as mentioned earlier in the series), and if you
+want to use a version in a magazine, CONTACT ME FIRST ... I will probably
+also modify it/cut out various unneccesary things ... other then that, you
+must not alter the files without my permission, or at least leave a copy of
+the origional with the update. Maybe I could even start up a nice column
+for some magazine or other :)
+
+Sorry 'bout that, but it had to be said ...
+
+I am writing a column for the Demuan list, a Florida-based electronic
+magazine ... pick it up off ftp.eng.ufl.edu ... I have written various
+articles, all bordering on quote-like design.
+
+There are more BBS's to be added to the list at the end, but I don't have
+them here... this tut has taken long enough ;-)
+
+Byeeeee....
+  - Denthor
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+บReckless Life             บ351-01-716 67 58บALL  บ
+บMach 5 BBS                บ+1 319-355-7336 บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.

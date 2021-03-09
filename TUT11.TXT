@@ -1,0 +1,185 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 11 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hello again everybody!
+
+The reason _this_ one is delayed (every single trainer has been so far ;))
+is mainly due to a birthday (my 19th), and numerous tests at the
+university (ugh!).  But anyway, here it is. The sample program this time
+is on cross-fading. The reason for this is that many people have
+commented that I should be moving over to a few basic demo effects now
+that we have most of the basics of VGA programming.  I was also thinking
+of either doing sound in a future version of this trainer, or starting a
+separate "ASPHYXIA Sound Tutorial" series. Comments?
+
+One major difference between this trainer and previous ones is that I am
+including binary files (pictures in this case). This means that it will
+not be available in the message bases of selected boards anymore, and it
+must be obtained from the file base.  Notice will however be given of
+it's existence in the message base.
+
+Asphyxia has formalised things a bit, and we now have a few official
+distribution sites for all our demos and trainers. If you would like
+your BBS to become a distribution site, please email me at
+smith9@batis.bis.und.ac.za and I will send you the necessary info.
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to Denthor, EzE, Goth, Fubar or Nobody on Connectix.
+            3) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            4) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            5) Write to smith9@batis.bis.und.ac.za in E-Mail.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ What is a "Crossfade"?
+
+This is a simple question. When you are watching a TV program, you will
+often see one picture on the screen, which slowly fades to a new
+picture, with the new picture becoming more and more prominent and the
+old one becoming less and less prominent. This is a crossfade. Easy huh?
+
+Perhaps, but it is not that easy to code on a computer...
+
+In most demos, there is a crossfade of two colors, black and white, for
+example : The words 'MYDEMOTEAM' appears in large with letters, then
+crossfades to 'PRESENTS' in large white letters.
+
+I decided to allow the programmer to have a bit of color to his
+crossfade, and the sample program can handle a many color crossfade.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ How does a crossfade work?
+
+Here comes the clever bit.
+
+To do a crossfade, we load in two pictures, FROM and TO. Then, for every
+pixel in which they are different, put a new pixel in a third screen.
+
+For example, wherever there is pixel color 9 on screen 1 and pixel color
+45 on screen 2, put pixel color 1 on the third screen. You then repeat
+this for all combinations of pixels on screen one and two, and put the
+results into screen 3. Here it is in ascii ...
+
+  Screen 1     Screen 2     Screen 3
+   .1...        .3...        .1...
+   .....        ..2..        ..2..
+   ...8.    +   ...1.    =   ...3.
+   .1...        ....2        .4..2
+
+Note how the values on screen 3 are sequential? We keep a count for
+this... The two "2"'s on screen 3 are identical, so we do not use a new
+color for it...
+
+We also keep to pallettes ... source and dest.
+
+For the above example source[1] would be the pallette of 1 in screen 1,
+and dest[1] would be the pallette of 3 in screen 2 (Note that screen 1
+and screen 2 have different pallettes)
+
+When we are finished with the picture, we flip screen 3 to the vga and
+do the following : move the pallette from source to dest or vice versa.
+Thats it. No fancy screen manipulations for the crossfade, we just
+change the pallette. Cool, huh? It also means that you can be doing fun
+stuff in the foreground with unused pallette colors without your program
+executing at two frames per second ;)
+
+The sample program is fully documented, and you shouldn't have a problem
+deciphering it... If you ever use this effect in a demo or game, greet
+me! :-)
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Problems with crossfades
+
+The main problem with crossfading is this : there may only be 256 colors
+on screen 3, in other words, only 256 combinations of colors.  In the
+sample program, if you load up two pics with more then 256 combinations,
+the program gives an error message and exits to dos. To sort this
+problem out, you can do two things : reduce the number of places where
+the two pictures intersect, or squeeze down the pallette, using
+Autodesk Animators "SQUEEZE" command. This reduces the number of colors
+used by the picture, and therefore reduces the number of combinations.
+The picture does however lose a bit of quality.
+
+The second problem with crossfading is this : It hogs most of the
+colors. Whatever you want to do in the foreground, make sure you do it
+with as few colors as possible.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ In closing
+
+So, what do you think? Should I continue with demo effects, or should I
+find more basic things to do? Perhaps I should stop and just do sound
+coding from now on? It is up to you, so leave me mail.
+
+You will notice that the sample program can load in any .CEL files, you
+needn't be restricted by the ones I have given you. Try crossfading a
+few of your own pictures and see how it turns out. The picture of the
+robot was draw by Fubar for our demo Psycho Neurosis, and I then
+squeezed down the pallette somewhat in order for the crossfade to work.
+The word "ASPHYXIA" was drawn by me, also in Autodesk Animator.
+
+Oh well, I had better get this off quickly, today is the last time for
+the next few days that I can get on to the Net. I will also be voting
+tomorrow! If I see a CNN camera, I'll wave (Thats me, the one on the
+left in the red shirt! ;-))  The next trainer will be coming from the
+New South Africa (TM)
+
+See you next time!
+ - Denthor
+     - 9:16, 26 April, 1994
+
+PS. Does anyone in Holland with net access want to act as a courier
+between myself and the Accidental Connection BBS? Please leave me mail
+at smith9@batis.bis.und.ac.za ....
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บConnectix BBS             บ+27-31-266-9992 บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บPure Surf BBS             บ+27-31-561-5943 บA/H  บ
+บWasted Image              บ407-838-4525    บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.
+
+(I will find out the country code for Wasted Image later...)
+

@@ -1,0 +1,209 @@
+                   ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+                   ³         W E L C O M E         ³
+                   ³  To the VGA Trainer Program   ³ ³
+                   ³              By               ³ ³
+                   ³      DENTHOR of ASPHYXIA      ³ ³ ³
+                   ÔÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¾ ³ ³
+                     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ ³
+                       ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+                           --==[ PART 20 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş Introduction
+
+Hi all! It has been a _long_ time since my last trainer (as I am sure many
+of you have noticed) A lot has happened between now and the last trainer...
+but for once I won't bore you with the details ;) I do have a full time job
+though, coding C++ applications.
+
+I have taken over the production of the PCGPE from Mark Feldman. He is
+mailing all the articles written so far, and as soon as I get them I will
+get to work on releasing the PCGPE II. Mark is working on the Windows GPE.
+
+This trainer is on 3d hidden face removal and face sorting. I was going to
+add shading, but that can wait until a later trainer. For conveniance I
+will build on the 3d code from tut 16(?). The maths for face removal is a
+bit tricky, but just think back to your old High School trig classes.
+
+I have noticed that in my absence, one or two people have started their own
+trainer series. Read Hornet DemoNews for a great column by Trixter covering
+some of the more tricky demo effects.
+
+Well, on with the trainer!
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+http://goth.vironix.co.za/~denthor                     (WWW)
+ftp.eng.ufl.edu pub/msdos/demos/code/graph/tutor       (FTP)
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  Face Sorting
+
+There are many ways to sort faces in a 3d object. For now, I will show you
+just about the easiest one of the lot.
+
+Say you have to polygons....
+
+                ------P1
+
+           ------------------P2
+
+                   Eye
+
+As you can see, P1 has to be drawn before P2. The easiest way to do this is
+as follows:
+
+On startup, find the mid point of each of the polys, through the easy
+equations,
+        x = (P2.1.x + P2.2.x + P2.3.x + p2.4.x)/4
+        y = (P2.1.y + P2.2.y + P2.3.y + p2.4.y)/4
+        z = (P2.1.z + P2.2.z + P2.3.z + p2.4.z)/4
+
+NOTE : For a triangle you would obviously only use three points and divide
+by three.
+
+Anyway, now you have the X,Y,Z of the midpoint of the polygon. You can then
+rotate this point with the others. When it comes time to draw, you can
+compare the resulting Z of the midpoint, sort all of the Z items, and then
+draw them from back to front.
+
+In the sample program I use a simple bubble sort... basically, I check the
+first two values against each other, and swap them if the first is bigger
+then the second. I continue doing this to all the numbers until I run
+through the entire list without swapping once. Bubble sorts are standard
+seven computer science topics... perhaps borrow a text book to find out
+more about them and other (better) sorting methods.
+
+The above isn't perfect, but it should work 90% of the time. But it still
+means that when you are drawing a cube, you have to draw all 6 sides every
+frame, even though only three or so are visible. That is where hidden face
+removal comes in...
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  Hidden Face Removal
+
+Pick up something square. A stiffy disk will do fine. Face it towards you,
+and number all the corners from one to four in a clockwise direction.
+
+                1 +-------------+ 2
+                  |             |
+                  |             |
+                  |             |
+                  |             |
+                4 +-------------+ 3
+
+Now rotate the stiffy disk on all three axese, making sure that you can
+still see the front of the disk. You will notice that whenever you can see
+the front of the disk, the four points are still in alphabetical order. Now
+rotate it so that you can see the back of the stiffy. Your points will now
+be :
+
+                2 +-------------+ 1
+                  |             |
+                  |             |
+                  |             |
+                  |             |
+                3 +-------------+ 4
+
+The points are now anti-clockwise! This means, in it's simplest form, that
+if you define all your poygon points in a clockwise order, when drawing you
+ignore the polys that are anticlockwise. (Obviously when you define the 3d
+object, you define the polygons facing away from you in an anticlockwise
+order)
+
+To find out weather a poly's points are clockwise or not, we need to find
+it's normal. Here is where things start getting fun.
+
+In school, you are told that a normal is perpendicular to the plane. In
+ascii :
+                      | Normal
+                      |
+                      |
+        --------------------------- Polygon
+
+As you can see, the normal is at 90 degrees to the surface of the poly. We
+must extend this to three dimensions for our polygons. You'll have to trust
+me on that, I can't draw it in ascii :)
+
+To find a normal, you only need three points from your poly (ABC) :
+A(x0,y0,z0), B(X1,Y1,Z1), C(X2,Y2,Z2)
+
+then the vector normal = AB^AC = (Xn,Yn,Zn) with
+        Xn=(y1-y0)(z0-z2)-(z1-z0)(y0-y2)
+        Yn=(z1-z0)(x0-x2)-(x1-x0)(z0-z2)
+        Zn=(x1-x0)(y0-y2)-(y1-y0)(x0-x2)
+
+We are interested in the Z normal, so we will use the function :
+  normal:=(x1-x0)(y0-y2)-(y1-y0)(x0-x2);
+
+The result is something of a sine wave when you rotate the poly in three
+dimensions. A negative value means that the poly is facing you, a posotive
+value means that it is pointing away.
+
+The above means that with a mere two muls you can discount an entire poly
+and not draw it. This method is perfect for "closed" objects such as cubes
+etc.
+
+I am anything but a maths teacher, so go borrow someones math book to find
+out more about surface normals. Trust me, there is a lot more written about
+them then you think.
+
+An extension of calculating your normal is finding out about light-sourcing
+your polygons. Watch for more information in one of the next few tutors.
+
+
+A combination of the above two routines should work quite nicely in
+creating 3d objects with little or no overlapping. The example file will
+show you the two methods and how well they work.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ş  In closing
+
+As you can see, the above was quite easy. I have a few ideas for tut 21, so
+keep watch for it. Also keep an eye open for PCGPE ][ (but don't mail me
+asking when it's due! I already get too many of those! ;-)
+
+My sister got married a few days ago. The worst part was that I was forced
+to cut my hair. My hair was quite long (slightly longer then when the pic
+on my web page was taken), and it is all quite depressing. Anyway, the
+wedding was great, so it wasn't all for nothing.
+
+I hope to get tut 21 and possibly 22 out before christmas, but I will be on
+holiday from the 18th. I will be in Cape Town sometime after christmas day
+for a week or two, so if you're there I'll meet you on the cable car :-)
+
+I wrote a quote for this tut, but I have decided I didn't like it. I'll try
+do better for tut 21 ;)
+
+Byeeeee.....
+  - Denthor
+      14-12-95
+
+PS. I seem to have lost my list of distribution sites... could you all
+re-mail me your details? Thanks.

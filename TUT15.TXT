@@ -1,0 +1,186 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 15 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hello again. As you can see, this tut is very soon after the last one.
+This is because of two reasons ... 1) The PCGPE ][ will be out soon, so
+I thought I would make sure I have more then just four new trainers for it,
+and 2) I am usually so late between tuts, I thought I would make up for it.
+
+There is a discussion going on in Usenet, mostly saying that trainers etc.
+should be written a bit more formally and none of this gay banter and
+familiar language should be used. My "quotes" would definately be out ;-)
+But, until I get paid for doing this (and there don't seem to be any takers
+on that score), I will continue to write in this manner. My apologies to those
+who dont like this, but hey, its free, what did you expect?
+
+This trainer is on plasmas, and the sample program actually became quite large,
+mostly due to the fact that there was some plasma stuff I wanted to try out.
+
+The concept is very simple, at least for this plasma, so you shouldn't have
+any problems understanding it ... AFTER you have read the text file ...
+jumping straight into the source may be hazardous to your brain.
+
+Plasmas are a great way to wow your friends by their wierd shapes and forms.
+I was at one stage going to write a game where the bad guy just had two
+circular plasmas instead of eyes... I am sure you will find creative and
+inventive new ways of doing and using plasmas.
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  How do plasmas work?
+
+I will only cover one type of plasma here ... a realtime plasma of course.
+Other types of plasmas include a static picture with a pallette rotation...
+
+When you get right down to it, this method of realtime plasmas is merely an
+intersection of four COS waves. We get our color at a particular point by
+saying :
+      col := costbl[one]+costbl[two]+costbl[three]+costbl[four];
+
+The trick is getting the four indexes of that cos table array to create
+something that looks nice. This is how we organise it : Have two of them
+being indexes for vertical movement and two of them being indexes for
+horizontal movement.
+
+This means that by changing these values we can move along the plasma. To
+draw an individual screen, we pass the values of the four to another four
+so that we do not disturb the origional values. For every pixel across, we
+add values to the first two indexes, then display the next pixel. For
+every row down, we add values to the second two indexes. Sound complex
+enough? Good, because that what we want, a complex shape on the screen.
+
+By altering the origional four values, we can get all sorts of cool movement
+and cycling of the plasma. The reason we use a cos table is as follows :
+a cos table has a nice curve in the value of the numbers ... when you
+put two or more together, it is possible to get circular pictures ...
+circles are hard to do on a computer, so this makes it a lot easier...
+
+Okay, now you can have a look at the source file, all I do is put the above
+into practice. I did add one or two things though ...
+
+Background : This is just a large array, with the values in the array being
+added to the plasma at that pixel.
+
+Psychadelic : This cycles through about 7000 colors instead of just rotating
+through the base 256.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Clever fading
+
+You will notice when the sample program fades in and out that the colors
+all reach their destination at the same time ... it other words, they don't
+all increment by one until they hit the right color then stop. When done
+in that way the fading does not look as professional.
+
+Here is how we do a step-crossfade.
+
+Each r,g,b value can be between 0 and 64. Have the pallette we want to get
+to in bob and the temporary pallette in bob2. For each step, from 0 to 63
+do the following :
+     bob2[loop1].r:=bob[loop1].r*step/64;
+
+That means if we are halfway through the crossfade (step=32) and the red
+value is meant to get to 16, our equation looks like this :
+    r:=16*32/64
+     r=8
+
+Which is half of the way to where it wants to be. This means all colors will
+fade in/out with the same ratios... and look nicer.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Rotating the pallette
+
+I have done this one before I think .. here it is ...
+
+move color 0 into temp
+
+move color 1 into color 0
+move color 2 into color 1
+move color 3 into color 2
+and so on till color 255
+
+move temp into color 255
+
+And you pallette is rotating. Easy huh? Recheck tut 2 for more info on
+pallette rotation
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  In closing
+
+The text file was a bit short this time, but that is mostly because the
+sample file is self explanitory. The file can however be speeded up, and
+of course you can add certain things which will totally change the look
+of the plasma.
+
+As always, I am on the lookout for more ideas for future tuts, if you have
+some, mail me!
+
+No quote today, this lan doesn't encourage creative thinking ;) However,
+there will be quotes in future as I have been told that some people like
+them. Even Pipsy said this while we were playing Ctrl-Alt-Del (two player
+game, one has to hit ctrl and alt as the other hits del, and the person
+hitting the del has to do it quickly so that the computer doesnt reboot.
+If the computer reboots the person who was hitting ctrl and alt has won.
+I thought I was doing really badly against Pipsy until I found out that the
+computer had frozen ;-))
+
+Byeeee....
+  - Denthor
+      14:11
+        16-9-94
+
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.

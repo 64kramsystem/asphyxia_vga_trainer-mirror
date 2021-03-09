@@ -1,0 +1,199 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 16 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hi there. This trainer is on the scaling of an arbitrary sized bitmap to
+screen in two dimensions. The sample program seems to work quite quickly,
+and the code is document. The scaling procedure is however totally in
+assembler ... hopefully this won't cause to many problems.
+
+EzE has released a trainer! It is on the speeding up of 3D for normal 3D
+and for virtual worlds. Check it out, it is quite good (even though I get
+a bit of ribbing in his quote ;-)) It will be in PCGPE ][, to be released
+shortly.
+
+I have set up a mailserver (that doesn't seem to work all the time, but
+the ones that miss I post manually). It works like this :
+
+Send mail to denthor@beastie.cs.und.ac.za with the subject line :
+request-list ... it will automatically mail you back with a list of
+subject lines with which you can grab certain files. You will then mail me
+with the subject line of a specific file and it will send you a uuencoded
+version of that file automatically. Cool, huh?
+
+Remember, no more mail to smith9@batis.bis.und.ac.za, send it all to
+denthor@beastie.cs.und.ac.za ! Thanks.
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            3) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            4) Write to denthor@beastie.cs.und.ac.za in E-Mail.
+            5) Write to asphyxia@beastie.cs.und.ac.za to get to all of
+               us at once.
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  What is scaling?
+
+I think that most of you know this one already, but here goes. Let us say
+you have a picture (10x10 pixels) and you want to draw it to a different
+size (say 5x7 pixel), the process of altering the picture to fit into the
+new size is called scaling. Scaling only works on rectangular areas.
+
+With scaling to can easily strech and shrink your bitmaps.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Okay, so how do we code it?
+
+Right. The way I am going to do scaling is as follows :
+
+For the horizontal area, I am going to calculate a certain step value. I
+will then trace along the bitmap, adding this step to my position, and
+placing the nearest pixel on to the screen. Let me explain this simpler ...
+
+Let us say I have a 10 pixel wide bitmap. I want to squish it into 5 pixels.
+Along the bitmap, I would draw every second pixel to screen. In ascii :
+
+  1234567890   13579
+  +--------+   +---+
+  |        |   |   |
+  | bitmap |   |   |dest
+  |        |   |   |
+  +--------+   +---+
+
+As you can see, by stepping through every second pixel, I have shrunk the
+bitmap to a width of 5 pixels.
+
+The equation is as follows :
+
+            step = origionalwidth / wantedwidth;
+
+Let us say we have a 100 pixel wide bitmap, which we want to get to 20 pixels.
+
+            step = 100 / 20
+            step = 5
+
+If we draw every fifth pixel from the origional bitmap, we have scaled it down
+correctly! This also works for all values, if step is of type real.
+
+We also find the step for the height in the same way.
+
+Our horizontal loop is as follows :
+
+       For loop1:=1 to wantedwidth do BEGIN
+         putpixel (loop1,height,bitmap[round (curpos)],vga);
+         curpos:=curpos+xstep;
+       END;
+
+And the vertical loop is much the same. Easy huh? So east in fact, I wrote the
+procedure in pure assembler for you ;-) ... don't worry, it's commented.
+
+In the sample program, instead of using reals I have used fixed point math.
+Refer to tut 14 if you have any hassles with fixed point, it is fairly
+straightforward.
+
+I also use psuedo 3-d perspective transforms to get the positions smooth...
+after Tut8, this should be a breeze.
+
+There are no new commands in the assembler for you, so you should get by with
+what you learned in tut7/8 ... whew! A lot of back referencing there ;) We
+really are building on our knowledge :)
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  In closing
+
+Well, that is about it. As you can see the concept is easy, and in fact
+fairly obvious, but that didn't stop me from having to sit down with a
+pencil and a piece of paper a few months ago and puzzle it out ;-)
+
+I have a lot of work ahead of me for a while, so this may be the last
+trainer for a few months ... unless I can find some free time available.
+So please be patient!
+
+
+       [ "Sir! My computer has just gone haywire!"
+         "What?" shouts the CO. "That is a multimilliondollar machine!
+           find out what's wrong! This is a critical time lieutenant!"
+         "Yes sir"
+         The young lieutenant furiously types away at the keyboard, but
+           the machine totally ignores her.
+         "What is going on, soldier?"
+         "I don't know sir! It is just doing totally arbitrary things
+           after it's assigned tasks are completed. In the computer world
+           this is known as Denthorisms."
+         The computer starts to make random beeps, and prints out a payroll
+           program.
+         "Get it working NOW soldier"
+         The lieutenant ignores him, and contines typing. She gets partial
+           control of the system, she can run programs, but the computer is
+           continually running arb tasks in the background. One of the
+           techhies who have gathered behing her suddenly cries "Hey! It's
+           accessing the missile codes! It wants to launch them!"
+         The typing gathers speed, but to no avail. Another techhie says
+           "I could disconnect the computer from the link, but that would take
+           hours! And this thing will have the codes in under five minutes
+           at the speed it's going!"
+         A smile forms on the lieutanants face, and she leans back in her chair.
+         "What the hell are you doing?" yells the CO. "Why have you stopped?"
+         Again ignoring him, the lieutenant instead turns to the techhie. "Go
+           disconnect the machine, I know how to get you the time you need."
+         "How on earth will you do that? The machines going at top speed!"
+         She smiles again, leans forward, types in three letters and hits the
+           carriage return. The computer grinds to a halt.
+         The smile breaks into a grin. "Maybe it _does_ have it's uses after
+           all."
+                                                                        ]
+                                                         - Grant Smith
+                                                             15:30
+                                                               23-9-94
+
+Byeeeee.....
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+บReckless Life             บ351-01-716 67 58บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.
+

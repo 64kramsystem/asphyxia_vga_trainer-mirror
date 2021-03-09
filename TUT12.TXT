@@ -1,0 +1,300 @@
+                   ีอออออออออออออออออออออออออออออออธ
+                   ณ         W E L C O M E         ณ
+                   ณ  To the VGA Trainer Program   ณ ณ
+                   ณ              By               ณ ณ
+                   ณ      DENTHOR of ASPHYXIA      ณ ณ ณ
+                   ิอออออออออออออออออออออออออออออออพ ณ ณ
+                     ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ณ
+                       ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+                           --==[ PART 12 ]==--
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ Introduction
+
+Hello! :-)
+
+Well, a lot has happened since the last trainer, which is the reason for
+the amazingly long delay. First, the elections. These were quite easy
+actually, I went and watched a move (Demolition Man) (Election day
+special, all movies R2, which is about 50 US cents), then went and voted
+after most voters had gone home, so no long lines ;-). Soon after were
+exams. These did not go too well, and I am not looking forward to the
+results. Finally, I got measles and pneumonia at the same time and was
+sent off to hospital for a few days. All in all, not events which are
+conducive to coding! This has meant that the trainer has been delayed,
+and ASPHYXIA was not able to enter into the local democompo, Dexterity
+'94, which we were hoping to do well in. Oh well, onward and upward!
+
+This trainer is on full screen scrolling in Chain-4, by request. This is
+actually very easy to do (and smooth), and holds a lot of potential, as
+I am sure you can immediately imagine.
+
+A few more things : People have been saying they have had hassles
+sending me email, and I have found that this is because they forget the
+numbers in my name. They send mail to smith@batis... which does not
+exist, or smith@beastie... which is my brothers account. He is getting a
+bit sick of forwarding my mail to me ;). The two address are :
+       smith9@batis.bis.und.ac.za
+       smith0@beastie.cs.und.ac.za
+
+I have lost about 200k worth of email, chalk it up to my beginner status
+at Unix. The test to see if your mail got through? I have answered
+_every_ email message sent to me (no easy task), so if you haven't got a
+reply, please resend the message.
+
+You can now also send a group message to all members of Asphyxia. Just
+send mail to asphyxia@beastie.cs.und.ac.za and we will all get a copy
+... which could mean numerous replies to one querey ;)
+
+
+If you would like to contact me, or the team, there are many ways you
+can do it : 1) Write a message to Grant Smith/Denthor/Asphyxia in private mail
+                  on the ASPHYXIA BBS.
+            2) Write to Denthor, EzE, Goth, Fubar or Nobody on Connectix.
+            3) Write to :  Grant Smith
+                           P.O.Box 270 Kloof
+                           3640
+                           Natal
+                           South Africa
+            4) Call me (Grant Smith) at (031) 73 2129 (leave a message if you
+                  call during varsity). Call +27-31-73-2129 if you call
+                  from outside South Africa. (It's YOUR phone bill ;-))
+            5) Write to smith9@batis.bis.und.ac.za in E-Mail.
+            6) Write to asphyxia@beastie.cs.und.ac.za
+
+NB : If you are a representative of a company or BBS, and want ASPHYXIA
+       to do you a demo, leave mail to me; we can discuss it.
+NNB : If you have done/attempted a demo, SEND IT TO ME! We are feeling
+        quite lonely and want to meet/help out/exchange code with other demo
+        groups. What do you have to lose? Leave a message here and we can work
+        out how to transfer it. We really want to hear from you!
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  What is full screen scrolling?
+
+I seem to recall doing this in a previous tut, but here goes again! Full
+screen scrolling is when the entire screen moves in a particular
+direction, with the new picture scrolling on to the screen. Um. Think of
+movie credits. The screen, filled with text, is scrolled off the top of
+the screen while the new text is scrolled on from the bottom. This is
+full screen scrolling.
+
+Full screen scrolling is not limited to movie credits. Games like Raptor
+have you flying over a scrolling landscape while you are shooting down
+the bad guys. In this tutorial we will be doing vertical scrolling, but
+the code can very easily be altered for horizontal scrolling too.
+
+Remember that we will be using Chain-4 to do our scrolling, so you may
+want to brush up on tut 10 in which that was covered. I will assume a
+brief knowledge of how chain-4 works for this tutorial.
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  The theory
+
+The theory behind full screen scrolling in Chain-4 is acually very
+simple.
+
+Picture if you will, a screen that is two monitors high. Chain-4
+actually has four, but for this we only need two. Now, for this screen
+that is two monitors high, we can only see one monitors worth. Here it
+is in ASCII
+
+    +-------------+  Screen two monitors high
+    |             |
+    |             |
+    |             |
+    |             |
+    |+-----------+|
+    ||           ||
+    ||           ||<- This is the bit we can see, one monitors worth
+    ||           ||
+    |+-----------+|
+    +-------------+
+
+We can move the bit we can see up or down the enlarged screen. So, for
+example, if the screen two monitors high had a picture on it, we could
+move the bit we see up and down to try glimpse the entire picture. Think
+of it in this way : The screen is a large painting, but we can only see
+though a small magnifing glass. We can move this magnifing glass around
+the painting, but can never see the painting all at once.
+
+This actually works in our favour. Anything done outside the bit we are
+looking through cannot be seen, so we can do our work without changing
+our screen.
+
+On to scrolling. The method we will use this time is as follows :
+
+1) Draw the next line to be seen just above and just below the part we
+   can see.
+
+      +------------+ The enlarged screen
+      |            |
+      |            |
+      |111111111111|  The new part of the picture
+      |+----------+|
+      ||          || The bit we can see
+      |+----------+|
+      |111111111111|  The new part of the picture
+      +------------+
+
+2) Move the view up one pixel so that the new part of the picture is
+   visible at the top of the screen.
+
+3) Repeat Steps 1) and 2) until the whole screen is filled. Our screen
+   will look as follows :
+
+     +---------------+
+     |+-------------+|
+     ||3333333333333||
+     ||2222222222222|| Viewscreen
+     ||1111111111111||
+     |+-------------+|
+     |333333333333333|
+     |222222222222222|
+     |111111111111111|
+     +---------------+
+
+Check this picture with steps 1) and 2), you will see that this is
+correct.
+
+4) Set our viewport to the bottom of the enlarged screen.
+
+     +---------------+
+     |333333333333333|
+     |222222222222222|
+     |111111111111111|
+     |+-------------+|
+     ||3333333333333||
+     ||2222222222222|| New position of viewscreen
+     ||1111111111111||
+     |+-------------+|
+     +---------------+
+
+As you can see, the bit we will be looking at is exactly the same as
+before, we are now just at the bottom of the larger screen instead of
+the top!
+
+5) Jump back to 1). The entire sequence can begin again, and we can have
+   infinate scrolling in the upward direction. Clever huh?
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Our code
+
+In the sample code, we have 21 different icons. What we do is decide
+what the next row of icons is going to consist of. We then draw the next
+line of pixels above and below the viewscreen according to what icons we
+are displaying. We then scroll up one pixel and begin again. When we
+have completed a row of icons, we randomly select a new row and begin
+again. Our icons are 16x16, so exactly 20 fit across a 320 pixel screen.
+
+When we hit the top of our enlarged screen, we flip down to the bottom
+which looks exactly the same as the screen we have left. In this manner
+we have obtained smooth, infinate full screen scrolling!
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  Extra bits
+
+As you will see from the code, it would be the work of but a few minutes
+to extend our landscape across the two unused screens, thereby allowing
+limited horizontal movement along with our vertical movement. In fact,
+the entire routine could easily be made to be a horizontal scrolling
+routine.
+
+A map of sorts could be generated, with one byte equalling one terrain
+type. In this manner, the terrain scrolled over could be set, as in a
+flying game (Flying Shark, Raptor etc). The terrain could also easily be
+replaced with letters for our movie-style credits.
+
+Free direction scrolling, ie scrolling in all directions, is a very
+different matter, with very different methods to get it to work. Perhaps
+this will be discussed in a later trainer. But for now, work with this,
+know it, understand it, and think up many great things to do with it!
+How about a full screen text scrolly? A game? Go wild!
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+þ  In closing
+
+Well, I hope you enjoyed this, the latest trainer. The sample program is
+a little short, but that is because the concept is so simple. Attached
+is a file, PICCS.DAT, which contains the terrain and letters for the
+sample program. They were .CEL's, which I loaded into the des^ variable,
+which I then dumped to disk, for easy access later. The .CEL's were
+drawn on short notice, but still produces some nice terrain.
+
+I have recieved a few requests for future trainers, and most of them are
+for effects, so I guess that is what will be done from now on. A
+surprising number have told me not to do a sound trainer and stick with
+graphics stuff, with only a few asking for sound stuff, so I will hold
+off on that until there is more of a demand.
+
+I am still open to suggestions for future trainers, and of course
+suggestions for improving the series. Leave me mail!
+
+Hmm. A quote? Okay, let me think ....
+
+        [    The little devil sat atop the alpine slopes, frolicking in the
+           snow.  He threw a snowball at a nearby squirrel, which
+           missed. The resulting avalance buried two villages and a ski
+           resort.
+             The little devil was scared. Avalances were bad for
+           business. The locals would form team spirit, be nice to
+           each other and work together and free those trapped beneath
+           the snow, which created even more goodwill. The man
+           downstairs didn't like goodwill. He didn't like it at
+           all.
+             In the blink of an eye the devil was in his penthouse
+           apartment, dressed in his usual suit. He picked up the phone.
+           Dialing was for mortals.
+             "Hello, Micros..."
+             "This is Mister Crowley", interrupted the devil.
+             There were sounds of thumping on the other side of the
+           phone, then there was a new voice. "Hello, Bill here, we
+           haven't heard from you in a while, Mister Crowley." The fear
+           of the man on the other end was almost tangible. The devil
+           smiled.
+             "Hello Bill. Something has come up."
+             "No!" The man on the other side almost shouted with terror.
+           "Not Win..."
+             "Yes, Bill. It is time."
+             "Havn't I paid enough for my sins? Just that one night..."
+           The man was almost sobbing.
+             "You are touching me, Bill. But nevertheless, it is time."
+             "No." The man sounded beaten, alone.
+             "Yes. Bill, it is time for a new update."
+                                                                       ]
+                                                      - Grant Smith
+                                                          14:23
+                                                            23-7-94
+
+See you next time!
+  - Denthor
+
+The following are official ASPHYXIA distribution sites :
+
+ษออออออออออออออออออออออออออหออออออออออออออออหอออออป
+บBBS Name                  บTelephone No.   บOpen บ
+ฬออออออออออออออออออออออออออฮออออออออออออออออฮอออออน
+บASPHYXIA BBS #1           บ+27-31-765-5312 บALL  บ
+บASPHYXIA BBS #2           บ+27-31-765-6293 บALL  บ
+บC-Spam BBS                บ410-531-5886    บALL  บ
+บConnectix BBS             บ+27-31-266-9992 บALL  บ
+บPOP!                      บ+27-12-661-1257 บALL  บ
+บPure Surf BBS             บ+27-31-561-5943 บA/H  บ
+บSoul Asylum               บ+358-0-5055041  บALL  บ
+บWasted Image              บ407-838-4525    บALL  บ
+ศออออออออออออออออออออออออออสออออออออออออออออสอออออผ
+
+Leave me mail if you want to become an official Asphyxia BBS
+distribution site.
+
+
+
